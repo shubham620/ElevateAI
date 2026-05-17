@@ -16,7 +16,6 @@ export async function calculateWorkHealthScore(
     where: { employeeId: userId },
     include: {
       checkins: true,
-      activities: true,
     },
   });
 
@@ -119,8 +118,7 @@ function calculateCompletion(goals: any[]): number {
 // Calculate engagement based on activity
 function calculateEngagement(goals: any[]): number {
   const totalCheckins = goals.reduce((sum, g) => sum + g.checkins.length, 0);
-  const totalActivities = goals.reduce((sum, g) => sum + (g.activities ? g.activities.length : 0), 0);
-  const engagementRatio = goals.length ? (totalCheckins + totalActivities / 5) / goals.length : 0;
+  const engagementRatio = goals.length ? totalCheckins / goals.length : 0;
   return Math.min(100, engagementRatio * 20);
 }
 

@@ -22,15 +22,15 @@ export async function GET(request: NextRequest) {
       })
 
       const totalGoals = goals.length
-      const completedGoals = goals.filter(g => g.status === "COMPLETED").length
-      const inProgressGoals = goals.filter(g => g.status === "IN_PROGRESS").length
-      const atRiskGoals = goals.filter(g => {
+      const completedGoals = goals.filter((g: any) => g.status === "COMPLETED").length
+      const inProgressGoals = goals.filter((g: any) => g.status === "IN_PROGRESS").length
+      const atRiskGoals = goals.filter((g: any) => {
         const daysLeft = Math.ceil((g.deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         return daysLeft < 30 && g.progress < g.target * 0.8
       }).length
 
       const overallProgress = goals.length > 0
-        ? Math.round(goals.reduce((sum, g) => sum + (g.progress / g.target * g.weightage), 0) / 100)
+        ? Math.round(goals.reduce((sum: number, g: any) => sum + (g.progress / g.target * g.weightage), 0) / 100)
         : 0
 
       const notifications = await prisma.notification.findMany({
@@ -58,23 +58,23 @@ export async function GET(request: NextRequest) {
       })
 
       const teamGoals = await prisma.goal.findMany({
-        where: { employeeId: { in: teamMembers.map(m => m.id) } },
+        where: { employeeId: { in: teamMembers.map((m: any) => m.id) } },
         include: { employee: true },
       })
 
-      const pendingApprovals = teamGoals.filter(g => g.approvalStatus === "PENDING").length
+      const pendingApprovals = teamGoals.filter((g: any) => g.approvalStatus === "PENDING").length
       const completionRate = teamGoals.length > 0
-        ? Math.round((teamGoals.filter(g => g.status === "COMPLETED").length / teamGoals.length) * 100)
+        ? Math.round((teamGoals.filter((g: any) => g.status === "COMPLETED").length / teamGoals.length) * 100)
         : 0
 
       return NextResponse.json({
         type: "manager",
         stats: {
           teamMembers: teamMembers.length,
-          activeGoals: teamGoals.filter(g => g.status === "IN_PROGRESS").length,
+          activeGoals: teamGoals.filter((g: any) => g.status === "IN_PROGRESS").length,
           completionRate,
           pendingApprovals,
-          atRiskGoals: teamGoals.filter(g => {
+          atRiskGoals: teamGoals.filter((g: any) => {
             const daysLeft = Math.ceil((g.deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
             return daysLeft < 30 && g.progress < g.target * 0.8
           }).length,
@@ -89,17 +89,17 @@ export async function GET(request: NextRequest) {
         include: { employee: true },
       })
 
-      const departments = [...new Set(allUsers.map(u => u.department))]
+      const departments = [...new Set(allUsers.map((u: any) => u.department))]
 
       return NextResponse.json({
         type: "admin",
         stats: {
-          totalEmployees: allUsers.filter(u => u.role === "EMPLOYEE").length,
-          activeGoals: allGoals.filter(g => g.status === "IN_PROGRESS").length,
+          totalEmployees: allUsers.filter((u: any) => u.role === "EMPLOYEE").length,
+          activeGoals: allGoals.filter((g: any) => g.status === "IN_PROGRESS").length,
           completionRate: allGoals.length > 0
-            ? Math.round((allGoals.filter(g => g.status === "COMPLETED").length / allGoals.length) * 100)
+            ? Math.round((allGoals.filter((g: any) => g.status === "COMPLETED").length / allGoals.length) * 100)
             : 0,
-          riskAlerts: allGoals.filter(g => {
+          riskAlerts: allGoals.filter((g: any) => {
             const daysLeft = Math.ceil((g.deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
             return daysLeft < 30 && g.progress < g.target * 0.8
           }).length,

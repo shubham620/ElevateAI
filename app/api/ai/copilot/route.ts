@@ -144,8 +144,8 @@ async function handlePerformanceAnalysis(
       include: { checkins: true },
     });
 
-    const completedGoals = goals.filter((g) => g.status === "COMPLETED").length;
-    const atRiskGoals = goals.filter((g) => {
+    const completedGoals = goals.filter((g: any) => g.status === "COMPLETED").length;
+    const atRiskGoals = goals.filter((g: any) => {
       const daysLeft =
         (new Date(g.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
       return (
@@ -166,7 +166,7 @@ Overall Health Score: **${healthScore.score}/100**
 ✏️ Breakdown:
 • Total Goals: ${goals.length}
 • Completed: ${completedGoals}
-• In Progress: ${goals.filter((g) => g.status === "IN_PROGRESS").length}
+• In Progress: ${goals.filter((g: any) => g.status === "IN_PROGRESS").length}
 • At Risk: ${atRiskGoals}
 
 📊 Productivity Score: ${healthScore.productivity}/100
@@ -259,7 +259,7 @@ async function handleNaturalLanguageQuery(
       const goals = await prisma.goal.findMany({
         where: { employeeId: userId },
       });
-      context.goals = goals.map((g) => ({
+      context.goals = goals.map((g: any) => ({
         title: g.title,
         progress: g.progress,
         status: g.status,
@@ -279,7 +279,7 @@ async function handleNaturalLanguageQuery(
       });
 
       if (user?.employees) {
-        context.employees = user.employees.map((emp) => ({
+        context.employees = user.employees.map((emp: any) => ({
           name: emp.name,
           healthScore: 75, // Will be calculated
           goals: emp.goals,

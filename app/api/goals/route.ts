@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     })
 
     const totalWeightage = existingGoals.reduce(
-      (sum, goal) => sum + goal.weightage,
+      (sum: number, goal: any) => sum + goal.weightage,
       0
     ) + weightage
 
