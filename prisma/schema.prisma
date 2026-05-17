@@ -1,0 +1,252 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  password      String
+  role          Role      @default(EMPLOYEE)
+  department    String?
+  avatar        String?
+  
+  // Manager relationship
+  managerId     String?
+  manager       User?     @relation("ManagerToEmployee", fields: [managerId], references: [id], onDelete: SetNull)
+  employees     User[]    @relation("ManagerToEmployee")
+  
+  // Goals
+  goals         Goal[]
+  
+  // Notifications
+  notifications Notification[]
+  
+  // Activity logs
+  activities    ActivityLog[]
+  
+  // Goal comments
+  goalComments  GoalComment[]
+  
+  // AI Insights
+  aiInsights    AIInsight[]
+  
+  // Check-ins
+  checkins      QuarterlyCheckin[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@index([role])
+  @@index([department])
+}
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  ADMIN
+}
+
+model Goal {
+  id                String    @id @default(cuid())
+  title             String
+  description       String    @db.Text
+  thrustArea        String    // Strategic focus area
+  kpiType           String    // Type of KPI (Revenue, Customer, Efficiency, etc.)
+  target            Float     // Target value
+  progress          Float     @default(0) // Current progress
+  status            GoalStatus @default(DRAFT)
+  approvalStatus    ApprovalStatus @default(PENDING)
+  weightage         Float     // Goal weightage in percentage
+  deadline          DateTime
+  locked            Boolean   @default(false)
+  
+  // Employee relationship
+  employeeId        String
+  employee          User      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Shared goal relationship (for departmental goals)
+  sharedGoalId      String?
+  sharedGoal        Goal?     @relation("SharedGoals", fields: [sharedGoalId], references: [id], onDelete: SetNull)
+  linkedGoals       Goal[]    @relation("SharedGoals")
+  
+  // Check-ins
+  checkins          QuarterlyCheckin[]
+  
+  // Comments
+  comments          GoalComment[]
+  
+  // Activity logs
+  activities        ActivityLog[]
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([approvalStatus])
+  @@index([deadline])
+}
+
+enum GoalStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REWORK
+}
+
+model GoalComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  goalId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([goalId])
+  @@index([userId])
+}
+
+model QuarterlyCheckin {
+  id              String   @id @default(cuid())
+  goalId          String
+  goal            Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  quarter         String   // Q1, Q2, Q3, Q4
+  year            Int
+  achievement     String   @db.Text
+  progress        Float
+  status          CheckinStatus
+  managerComment  String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([goalId])
+  @@index([userId])
+  @@index([quarter])
+}
+
+enum CheckinStatus {
+  NOT_STARTED
+  ON_TRACK
+  AT_RISK
+  COMPLETED
+  DELAYED
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      NotificationType
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  
+  relatedId String?  // ID of related goal or entity
+  
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+}
+
+enum NotificationType {
+  GOAL_APPROVED
+  GOAL_REJECTED
+  GOAL_REWORK
+  GOAL_COMMENT
+  CHECKIN_APPROVED
+  NEW_SHARED_GOAL
+  RISK_ALERT
+  ACHIEVEMENT_MILESTONE
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  goalId    String?
+  goal      Goal?    @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  
+  oldValue  String?  @db.Text
+  newValue  String?  @db.Text
+  
+  metadata  String?  @db.Text // JSON metadata
+  
+  timestamp DateTime @default(now())
+
+  @@index([userId])
+  @@index([goalId])
+  @@index([timestamp])
+}
+
+model AIInsight {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  insightType InsightType
+  title       String
+  content     String   @db.Text
+  
+  metadata    String?  @db.Text // JSON: goals analyzed, metrics, etc.
+  
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([insightType])
+}
+
+enum InsightType {
+  GOAL_QUALITY
+  RISK_PREDICTION
+  PERFORMANCE_TREND
+  SMART_RECOMMENDATION
+  REVIEW_DRAFT
+  PRODUCTIVITY_SCORE
+  DELAY_WARNING
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  
+  userId    String?
+  changes   String   @db.Text // JSON of what changed
+  
+  timestamp DateTime @default(now())
+
+  @@index([action])
+  @@index([timestamp])
+}
