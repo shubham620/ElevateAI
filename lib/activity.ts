@@ -1,6 +1,6 @@
 // lib/activity.ts
 import { prisma } from "./prisma";
-import { NotificationType } from "@prisma/client";
+import { NotificationType } from "../types";
 
 export type ActivityType =
   | "GOAL_CREATED"
@@ -92,7 +92,7 @@ async function createNotificationFromActivity(
     if (notification.userId) {
       await prisma.notification.create({
         data: {
-          type: notification.type as NotificationType,
+          type: notification.type,
           message: notification.message,
           read: false,
           userId: notification.userId,

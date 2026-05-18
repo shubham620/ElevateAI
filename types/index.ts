@@ -1,7 +1,11 @@
 // types/index.ts
-import { Role, GoalStatus, ApprovalStatus, CheckinStatus, NotificationType, InsightType } from "@prisma/client"
 
-export type { Role, GoalStatus, ApprovalStatus, CheckinStatus, NotificationType, InsightType }
+export type Role = "EMPLOYEE" | "MANAGER" | "ADMIN"
+export type GoalStatus = "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "REWORK"
+export type CheckinStatus = "NOT_STARTED" | "ON_TRACK" | "AT_RISK" | "COMPLETED" | "DELAYED"
+export type NotificationType = "GOAL_APPROVED" | "GOAL_REJECTED" | "GOAL_REWORK" | "GOAL_COMMENT" | "CHECKIN_APPROVED" | "NEW_SHARED_GOAL" | "RISK_ALERT" | "ACHIEVEMENT_MILESTONE"
+export type InsightType = "GOAL_QUALITY" | "RISK_PREDICTION" | "PERFORMANCE_TREND" | "SMART_RECOMMENDATION" | "REVIEW_DRAFT" | "PRODUCTIVITY_SCORE" | "DELAY_WARNING"
 
 export interface User {
   id: string
