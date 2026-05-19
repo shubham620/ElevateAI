@@ -1,9 +1,14 @@
 // lib/openai.ts
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAIClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY environment variable is not set");
+  }
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+}
 
 // SMART Goal Generator
 export async function generateSmartGoal(description: string): Promise<{
@@ -14,6 +19,7 @@ export async function generateSmartGoal(description: string): Promise<{
   smartScore: number;
   suggestion: string;
 }> {
+  const openai = getOpenAIClient();
   const resp = await openai.chat.completions.create({
     model: "gpt-4",
     max_tokens: 1024,
@@ -71,6 +77,7 @@ export async function analyzeGoalQuality(
   realism: number;
   suggestions: string[];
 }> {
+  const openai = getOpenAIClient();
   const resp = await openai.chat.completions.create({
     model: "gpt-4",
     max_tokens: 1024,
@@ -130,6 +137,7 @@ export async function generatePerformanceReview(
   improvements: string[];
   recommendations: string[];
 }> {
+  const openai = getOpenAIClient();
   const goalsText = goals
     .map((g) => `- ${g.title}: ${g.progress}% (${g.status})`)
     .join("\n");
@@ -188,6 +196,7 @@ export async function explainPerformanceChange(
   daysSinceUpdate: number,
   completionTrend: "improving" | "stable" | "declining"
 ): Promise<string> {
+  const openai = getOpenAIClient();
   const resp = await openai.chat.completions.create({
     model: "gpt-4",
     max_tokens: 500,
@@ -220,6 +229,7 @@ export async function predictGoalRisk(
   factors: string[];
   recommendations: string[];
 }> {
+  const openai = getOpenAIClient();
   const daysSinceUpdate = Math.floor(
     (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24)
   );
@@ -276,6 +286,7 @@ export async function processNaturalLanguageQuery(
     employees: Array<{ name: string; healthScore: number }>;
   }
 ): Promise<string> {
+  const openai = getOpenAIClient();
   const goalsContext = context.goals
     .map((g) => `- ${g.title} (${g.progress}%, ${g.status})`)
     .join("\n");
@@ -316,6 +327,7 @@ export async function analyzeStuckGoal(
   rootCauses: string[];
   actions: string[];
 }> {
+  const openai = getOpenAIClient();
   const updates = lastThreeUpdates
     .map((u) => `${u.daysAgo} days ago: ${u.achievement}`)
     .join("\n");

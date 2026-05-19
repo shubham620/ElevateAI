@@ -5,10 +5,6 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
-
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -25,6 +21,17 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { message: "AI feature is not configured. Please set OPENAI_API_KEY." },
+        { status: 503 }
+      )
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
 
     const prompt = `You are an expert performance management consultant. Convert this rough goal idea into a professional SMART goal.
 
