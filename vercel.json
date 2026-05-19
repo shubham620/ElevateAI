@@ -1,24 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "framework": "nextjs",
-  "env": {
-    "NODE_ENV": "production",
-    "DATABASE_URL": {
-      "description": "Database connection string (SQLite or PostgreSQL)",
-      "required": true
-    },
-    "NEXTAUTH_URL": {
-      "description": "The URL where your app is hosted",
-      "required": true
-    },
-    "NEXTAUTH_SECRET": {
-      "description": "Secret key for NextAuth (use openssl rand -base64 32)",
-      "required": true
-    },
-    "NEXT_PUBLIC_API_URL": {
-      "description": "Public API URL for client-side requests",
-      "required": false
-    }
-  }
+  "framework": "nextjs"
 }
